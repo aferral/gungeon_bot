@@ -1,0 +1,65 @@
+# Dependencias
+# sudo apt-get install xtightvncviewer
+# install xvfb, x11vnc
+
+# Para el label de imagen usar https://github.com/tzutalin/labelImg
+
+# TODO para el label crear script que mueve elementos fuera de su carpeta a carpeta extra
+
+# TODO ver como quitar el punto de los nombre de archivo
+
+# TODO 
+Pipeline
+
+# inicia proceso
+sh launch_xserver.sh 
+# TODO formas de detener los procesos
+
+# Puede ser necesario acelerar la prediccion (https://www.dlology.com/blog/how-to-run-tensorflow-object-detection-model-faster-with-intel-graphics/)
+
+# TODO unit domain sockets ??#
+# PUBLICAR GIT
+# TODO evaluar lanzar procesos de deteccion en procesos separados
+
+# inicia proceso de samples
+
+# TODO calcular terreno pasable
+
+
+# crear un overlay en tiempo real de la ultima frame que muestre boundings boxes
+# de todo lo detectable
+
+# Paso extra faltante conseguir geometria del cuarto (quizas del minimapa??)
+
+# Paso A
+# Dado imagen estatica distinguir (pos_jugador,pos mira,hp,blanks,enemigos,disparos_enemigos)
+
+# Paso B refinamiento dado historia
+# Idealemente cada enemgio, bala debe ser distinguible
+# Dado informacion estatica complementar con historica
+# Generar estado filtrado
+
+# Paso C
+# Agente dado estado
+# Disparo:
+# 	get_or_set_target (elige de los enemigos en vista o usa el que estaba)
+# 	calcula vector unitario a tarjet
+# 	Enviar mouse a esa coordenada
+# 	Si esta dentro de cierto angulo dispara
+#
+#
+# Movimiento:
+# 	(Metodo basado en gradientes)
+# 	Coloca peaks en cada posicion de enemigo
+# 	Dado trayectorias y velocidades de balas. Calcula funcion de influencia. 
+#	(Ignora a proposito las caidas)
+#	Evalua el gradiente local y da paso segun delta 
+#	Calcula vector de movimiento segun flechas
+#
+# Dodge:
+	# Si ves caida adelante o gradientes de dano muy cerca activa dodge
+	# Calcula mov de forma que llege a no caida o no golpe
+# 
+
+
+
