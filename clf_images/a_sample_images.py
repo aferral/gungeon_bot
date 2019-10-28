@@ -22,8 +22,7 @@ if __name__ == "__main__":
             print("Imagen {0} no ha cambiado se salta".format(next_t))
         else:
             print("Imagen {0} AGREGADA".format(next_t))
-            name_norm = next_t.replace('.','_')
-            out_path = os.path.join(out_folder,'{0}.png'.format(name_norm))
+            out_path = os.path.join(out_folder,'{0}.png'.format(next_t))
             cv2.imwrite(out_path,current_img)
             
         current_t = next_t

@@ -4,22 +4,68 @@
 
 # Para el label de imagen usar https://github.com/tzutalin/labelImg
 
-# TODO para el label crear script que mueve elementos fuera de su carpeta a carpeta extra
+# TODO intentar colocar imagenes en unix domain socket
+# TODO orquestar pipeline + state_fusion
 
-# TODO ver como quitar el punto de los nombre de archivo
-
-# TODO 
+# TODO crear replays imgs, states, 
+# TODO crear en deplot algo que mate todos ls processo de captura a la vez
+# TODO colocar unixx socket a captura de imagenes???
 Pipeline
 
-# inicia proceso
+# inicia juego en otra pantalla y captura imagenes a carpeta images_buffer
 sh launch_xserver.sh 
-# TODO formas de detener los procesos
+
+# iniciar sample de imagenes. Toma cada 1 s imagene de images_buffer y las coloca en ./samples
+python -m clf_images/a_sample_images
+
+# Iniciar captura de image (toma la ultima imagen de images_buffer)
+# Y calcula las features como posicion jugador, posicion enemigos, disparos, etc
+python main.py
+
+# TODO mejorar algo sistema de balas?? no detecta bien cuando estan muy juntas o por color
 
 # Puede ser necesario acelerar la prediccion (https://www.dlology.com/blog/how-to-run-tensorflow-object-detection-model-faster-with-intel-graphics/)
+(VER COSA QUE MANDO AICHELE)
+# 
+# Idea simple: Las funciones corren todo el rato
 
-# TODO unit domain sockets ??#
-# PUBLICAR GIT
-# TODO evaluar lanzar procesos de deteccion en procesos separados
+
+# El procesador de estados siempre esta leyendo y revisando el estado actual.
+# Su funcion es limpiar el ruido en los datos de forma de tener uan senal limpia de estado
+# Debe tener una metrica de incertidumbre para lanzar el planner
+# Si es alta esta metrica sigue alimentandose
+# Si considera que el estado es estable envia por unix socket 
+# Se envia por unix socket 
+#
+# El planer abre el estado y consigue accion a realizar
+
+# 	- REQUISITOS
+# 		- debe poder mantener una lista de mensajes en espera 
+# 		- Lista debe ser secuencia
+# 		- Que ocurre si se llena???
+# 			-- Idealmente botar los antiguos
+#		- Idealmente que sea facil de conectar o desconectar
+#
+# Arquitectura
+# proceso detector de terreno       -> P fusion: agrega terreno a historico y calcula estimacion actual
+# proceso detector de enemigos      -> P fusion: calcula dado historico, actual estimacion actual
+# proceso detector de balas         -> P fusion: dado historico, actual estima
+# proceso detector de vidas,blanks  -> P fusion: same
+# proceso detector de mira          -> P fusion: same
+#
+#  mensajes son {'timestamp' : x,variables} esto deberia ser de un size fijo
+# P fusion: 
+# 	- Hilos separados: escriben 
+# 	- Espera hasta lectura en cualquiera de los sockets
+#       - actualiza el valor especifico
+#	- Proceso principal tiene el ultimo estimado de todas las variables relevantes y timestamp de ultimo mensaje
+#       
+#       - tambien calcula cierta condicion cada cierto tiempo para enviar accion de forma frecuente.
+#	- Dado estado filtrado envia accion
+#
+
+
+
 
 # inicia proceso de samples
 
@@ -38,28 +84,4 @@ sh launch_xserver.sh
 # Idealemente cada enemgio, bala debe ser distinguible
 # Dado informacion estatica complementar con historica
 # Generar estado filtrado
-
-# Paso C
-# Agente dado estado
-# Disparo:
-# 	get_or_set_target (elige de los enemigos en vista o usa el que estaba)
-# 	calcula vector unitario a tarjet
-# 	Enviar mouse a esa coordenada
-# 	Si esta dentro de cierto angulo dispara
-#
-#
-# Movimiento:
-# 	(Metodo basado en gradientes)
-# 	Coloca peaks en cada posicion de enemigo
-# 	Dado trayectorias y velocidades de balas. Calcula funcion de influencia. 
-#	(Ignora a proposito las caidas)
-#	Evalua el gradiente local y da paso segun delta 
-#	Calcula vector de movimiento segun flechas
-#
-# Dodge:
-	# Si ves caida adelante o gradientes de dano muy cerca activa dodge
-	# Calcula mov de forma que llege a no caida o no golpe
-# 
-
-
 

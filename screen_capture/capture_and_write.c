@@ -67,7 +67,7 @@ int getsc(){
 	// calcula timestamp
 	timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
-	sprintf(t,"%d.%d",ts.tv_sec,ts.tv_nsec);
+	sprintf(t,"%d_%d",ts.tv_sec,ts.tv_nsec);
 	time_string = t;
         	
  
