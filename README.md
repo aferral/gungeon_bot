@@ -2,7 +2,7 @@
 
 Bot con el cual pretendo pasar el juego Enter The Gungeon.
 
-![Ejemplo extracción caract](example.png "Ejemplo extracción caract")
+![Ejemplo extracción caract](example.gif "Ejemplo extracción caract")
 
 # Funcionamiento
 
