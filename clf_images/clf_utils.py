@@ -5,6 +5,10 @@ import numpy as np
 import tensorflow as tf
 from datetime import datetime
 
+from scipy import ndimage
+from state_fusion.deploy_utils import do_profile
+
+
 def now_string():
     a = datetime.now()
     return a.strftime("%d_%b_%Y__%H_%M_%S")
@@ -120,62 +124,34 @@ def parse_all_xmls(data_folder):
     return out,label_set
 
 
-def get_conected_components(bin_img,point_list): #(x,y)
-    all_points = set(point_list)
-    all_sets = []
-    xmax=bin_img.shape[0]
-    ymax=bin_img.shape[1]
-    # inicia todos como un conjunto de 1 elem
-
-    while len(all_points) > 0:
-        current = all_points.pop()
-        new_set = set()
-
-        to_check=[current]
-        while len(to_check) > 0:
-            c_e = to_check.pop()
-            all_points.discard(c_e)
-            if c_e in new_set:
-                continue
-            new_set.add(c_e)
-            x,y = c_e
-            # check directions
-            if x<(xmax-1) and bin_img[x+1,y]:
-                to_check.append((x+1,y))
-            if x>0 and bin_img[x-1,y]:
-                to_check.append((x-1,y))
-            if y<(ymax-1) and bin_img[x,y+1]:
-                to_check.append((x,y+1))
-            if y>0 and bin_img[x,y-1]:
-                to_check.append((x,y-1))
-
-        all_sets.append(new_set)
-
-    return all_sets
-
-
-def set_to_bb(point_set):
-    xmin = min([x[0] for x in point_set])
-    xmax = max([x[0] for x in point_set])
-    ymin = min([x[1] for x in point_set])
-    ymax = max([x[1] for x in point_set])
-    return {'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax}
-
 
 def bb_to_binary(bb,img_shape):
     temp=np.zeros(img_shape,dtype=np.bool)
     temp[bb['xmin']:bb['xmax'],bb['ymin']:bb['ymax']] = 1
     return temp
 
+def bbox2(img):
+    """
+    From https://stackoverflow.com/questions/31400769/bounding-box-of-numpy-array
+    :param img:
+    :return:
+    """
+    rows = np.any(img, axis=1)
+    cols = np.any(img, axis=0)
+    rmin, rmax = np.where(rows)[0][[0, -1]]
+    cmin, cmax = np.where(cols)[0][[0, -1]]
+
+    return rmin, rmax, cmin, cmax
+
 
 def from_act_to_bb(act_matrix,th):
     bin_img = act_matrix > th
+    res, n_labels = ndimage.label(bin_img)
 
-    t=np.where(bin_img)
-    point_list = zip(t[0].tolist(),t[1].tolist())
-
-    p_sets = get_conected_components(bin_img,point_list)
-    bbs = [set_to_bb(set_c) for set_c in p_sets]
+    bbs=[]
+    for i in range(1,n_labels+1):
+        xmin,xmax,ymin,ymax = bbox2(res==i)
+        bbs.append({'xmin': xmin, 'xmax': xmax, 'ymin': ymin, 'ymax': ymax})
 
     return bbs
 

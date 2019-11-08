@@ -6,6 +6,9 @@ import struct
 import socket
 import os
 import sys
+from state_fusion.logger import getLogger
+
+log=getLogger('msg_sockets')
 
 chunk_size=4096*20000
 send_buf_size = 2048
@@ -18,7 +21,7 @@ def load_msg(data_raw):
     now = time.time()
     trec = data_dict['timestamp']
     delay = now - trec
-    #print('Elapsed between send-rec: {0}'.format(delay))
+    #log.info('Elapsed between send-rec: {0}'.format(delay))
     return data_dict,delay
 
 
@@ -47,7 +50,7 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
             raise
 
     sock_read = socket.socket(socket.AF_UNIX, socket_type)
-    if verbose: print('starting up on %s' % name)
+    if verbose: log.info('starting up on %s' % name)
     
     sock_read.bind(name)
 
@@ -56,7 +59,7 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
 
     all_delays = []
     
-    if verbose: print('waiting for a connection')
+    if verbose: log.info('waiting for a connection')
 
     conn, client_address = sock_read.accept()
 
@@ -72,7 +75,7 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
             
             #if len(temp_buffer) < 500:
             data = conn.recv(chunk_size) 
-            #print("received {0} bytes".format(len(data)))
+            #log.info("received {0} bytes".format(len(data)))
             temp_buffer += data
 
             if len(data) == 0 and len(temp_buffer) == 0:
@@ -80,7 +83,7 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
         
             if not reading:
                 size_to_read = struct.unpack('i',temp_buffer[0:header_size])[0]
-                #print('Reading msg of len {0}'.format(size_to_read))
+                #log.info('Reading msg of len {0}'.format(size_to_read))
                 reading=True
 
             if len(temp_buffer) >= (size_to_read+header_size):
@@ -89,12 +92,13 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
                 reading=False
 
                 msg,delay = load_msg(data_msg)
+                #log.debug('Delay: {0}'.format(delay))
                 if skip_if_delay and (delay > skip_delay):
                     skiped +=1
                     temp_buffer = temp_buffer[msg_len:]
                     continue
 
-                if verbose: print('Skiped {0}'.format(skiped))
+                if verbose: log.info('Skiped {0}'.format(skiped))
 
                 yield msg
 
@@ -109,9 +113,9 @@ def socket_read_msg(name,verbose=False,skip_if_delay=False):
         sock_read.close()
 
         if verbose:
-            print('Elapsed: {0}'.format(en-st))
-            print('N messages rec: {0}'.format(len(all_delays)))
-            print(np.array(all_delays).mean())
+            log.info('Elapsed: {0}'.format(en-st))
+            log.info('N messages rec: {0}'.format(len(all_delays)))
+            log.info(np.array(all_delays).mean())
 
 @contextmanager
 def socket_sender(name,verbose=False):
@@ -131,26 +135,28 @@ def socket_sender(name,verbose=False):
     sock = socket.socket(socket.AF_UNIX, socket_type)
     sock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,send_buf_size)
 
-    if verbose: print('connecting to %s' % name)
+    if verbose: log.info('connecting to %s' % name)
 
+    log.info('WAITING FOR CONN')
     while True: # waiting for connection
         try:
             sock.connect(name)
             break
         except socket.error as msg:
             time.sleep(0.5)
+    log.info('CONN READY')
     try:
 
         def send_fun(obj):
             data_to_send = format_msg(obj)
-            if verbose: print('sending {0} bytes'.format(len(data_to_send)))
+            if verbose: log.info('sending {0} bytes'.format(len(data_to_send)))
             sock.sendall(data_to_send)
 
         yield send_fun
 
     finally:
         time.sleep(1)
-        if verbose: print('closing socket')
+        if verbose: log.info('closing socket')
         sock.close()
 
 
@@ -161,12 +167,12 @@ if __name__ == '__main__':
     modo = argv[1]
 
     if modo == '0':
-        print('INIT READER')
+        log.info('INIT READER')
         for msg in socket_read_msg(server_address,verbose=True):
             pass
 
     if modo == '1':
-        print('INIT SENDER')
+        log.info('INIT SENDER')
 
         n_msg = 100
         

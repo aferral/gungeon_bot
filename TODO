@@ -4,13 +4,54 @@
 
 # Para el label de imagen usar https://github.com/tzutalin/labelImg
 
-# TODO intentar colocar imagenes en unix domain socket
+# TODO0 investigar tf.saved_model
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md
+
+# TODO mejorar pipeline de feed function. Requiero que sea un proceso algo estilo cliente servidor para las frames
+# Luego cada proceso llama un get_frame como feedfunction
+# Para generar el dummy que toca un video se utilizaria el mismo asunto pero que avanze con cierto timeout
+# Para el modo de prueba tiene que entregar en secuencia para cada conexion.
+# TODO? agregar post proceso bbs?? (eliminar cuadrados muy pequenos o grandes)
+
+# idea feature detector de movimiento?? (optical flow)
+# Idea rectificacion de estado
+
+    # TODO Refactor de deploy para ingresar funcion de historico
+    # TODO evaluar delay aceptable
+
+    (guarda la lista hasta X pasos de los valores recividos)
+
+    -- Trayectorias de bbs. Trata de trackear como las mismas entidades se han movido en el tiempo.
+    -- Trayectorias bbs de disparos
+
+    -- Ubica player en el tiempo
+
+    -- IDEA crear clasificador de bbs (se hace resize a adimension fija)
+
+    Estima entidades existentes y cuales son enemigos.
+
+    Genera estado actual limpio (posiciones enemigos, pos jugador, etc)
+
+# TODO calcular terreno inapasable
+
+# TODO ENVIAR A ESTADO CONGELA SI NO ESTA CONECTADO
+
+
+# TODO pipeline de escalar entidades???
+
 # TODO orquestar pipeline + state_fusion
 
-# TODO crear replays imgs, states, 
+# TODO crear replays imgs, states,
 # TODO crear en deplot algo que mate todos ls processo de captura a la vez
 # TODO colocar unixx socket a captura de imagenes???
+# todo la arquitectura de un frame buffer parece interesante (http://algomuse.com/c-c/developing-a-multithreaded-real-time-video-processing-application-in-opencv)
+
+# TODO mejorar algo sistema de balas?? no detecta bien cuando estan muy juntas o por color
+# TODO mejora de deteccion enemigos, usar blanco y negro o colores HSV.
+
 Pipeline
+
+
 
 # inicia juego en otra pantalla y captura imagenes a carpeta images_buffer
 sh launch_xserver.sh 
@@ -22,11 +63,9 @@ python -m clf_images/a_sample_images
 # Y calcula las features como posicion jugador, posicion enemigos, disparos, etc
 python main.py
 
-# TODO mejorar algo sistema de balas?? no detecta bien cuando estan muy juntas o por color
 
 # Puede ser necesario acelerar la prediccion (https://www.dlology.com/blog/how-to-run-tensorflow-object-detection-model-faster-with-intel-graphics/)
-(VER COSA QUE MANDO AICHELE)
-# 
+
 # Idea simple: Las funciones corren todo el rato
 
 
@@ -68,8 +107,6 @@ python main.py
 
 
 # inicia proceso de samples
-
-# TODO calcular terreno pasable
 
 
 # crear un overlay en tiempo real de la ultima frame que muestre boundings boxes

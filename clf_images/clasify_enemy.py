@@ -36,6 +36,8 @@ label_to_target = {x : int(x == 'player_0') for i,x in enumerate(labels_to_use)}
 
 clasf_model_folder = 'clf_images/saved_models'
 
+
+
 def plot_predict_class(img, pred, loss_term, i_class, pred_th, y_data, y_rel, out_name=None):
     # img es float de 0 a 255. Algunas funciones requieren valores 0-1
     img_float = img / 255
@@ -290,7 +292,7 @@ class clf_base(ExitStack):
         assert(len(img_reshaped.shape) == 4)
 
         out_dict = {}
-        out_dict['model_input:0'] = img_reshaped
+        out_dict[self.input_layer] = img_reshaped
         out_dict[self.mean_value] = np.expand_dims(self.mean_img,axis=0)
         return out_dict
 
@@ -339,9 +341,11 @@ class clf_base(ExitStack):
         return img.astype(np.float32)
 
     def predict(self,img,target_label,pred_th):
+        return self.predict_with_heatmap(img,target_label,pred_th)[0]
+
+    def predict_with_heatmap(self,img,target_label,pred_th):
         w,h = img.shape[0:2]
         img_f = self.img_preprocess(img)
-        inv_input_factor = 1.0/self.input_factor
         target_shape = [1]+self.mask_shape+[self.n_labels]
 
         if self.input_factor != 1:
@@ -359,7 +363,8 @@ class clf_base(ExitStack):
 
         high_res = resize(pred, (w, h))
         bbs = from_act_to_bb(high_res, pred_th)
-        return bbs
+        return bbs,high_res
+
 
 
     def eval_with_img(self, img : np.ndarray, y_data=None, y_rel=None, out_name=None):

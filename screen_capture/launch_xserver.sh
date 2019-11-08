@@ -12,8 +12,8 @@ DISPLAY=:1 && steam steam://rungameid/311690 &
 if [ $1 -eq 1 ]
 then
 	echo "Iniciando con visualizacion"
-	#x11vnc -display :1 -bg -nopw -listen localhost -xkb &
-	#vncviewer :0
+	x11vnc -display :1 -bg -nopw -listen localhost -xkb &
+	vncviewer :0
 fi
 
 
