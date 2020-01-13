@@ -5,7 +5,11 @@ import time
 import cv2
 
 from state_fusion.msg_sockets import socket_sender
+from datetime import datetime
 
+def now_string():
+    now=datetime.now()
+    return now.strftime('%Y_%b_%d__%H:%M')
 
 def cicle_list(l):
     """
@@ -126,6 +130,8 @@ def do_send_loop(server_address, feature_instance, n_msgs=1000, raise_excp=False
                         print('EXCEPTION {0}'.format(e))
                         if raise_excp:
                             raise e
+                print('EXITING SENDER')
+                send_fun({'END':True}) # END signal
 
     if feature_instance.use_context:
         with feature_instance.model_context():

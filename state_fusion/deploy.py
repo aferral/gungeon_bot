@@ -1,17 +1,26 @@
+import pickle
 from multiprocessing import Process
 import os
 import threading
 import time
 from main import TemplateMatching, Tflite_clf
-from state_fusion.deploy_utils import random_img_from_folder, video_feed, do_send_loop, video_feed_realtime
+from state_fusion.deploy_utils import random_img_from_folder, video_feed, do_send_loop, video_feed_realtime, now_string
 from state_fusion.msg_sockets import socket_read_msg
 import cv2
 from utils_read_imgs import try_to_get_latest
 
+all_colors = {'bullets': (255, 0, 255),  # RGB
+              'hp': (0, 0, 255),
+              'scope': (51, 204, 51),
+              'blanks': (51, 204, 204),
+              'enemys': (255, 0, 0)
+              }
+
 if __name__ == '__main__':
 
     debug = False
-    show = True
+    show = False
+    record_output=True
 
     clean_state_socket = './clean_state'
 
@@ -27,37 +36,33 @@ if __name__ == '__main__':
         feed_function = video_feed_realtime("./screen_capture/video_data/out.mp4", frame_start=4400)
         skip_if_delay = True # False
         refresh_time = 1
-        n_msgs = -1 # run forever
+        n_msgs = 100 # run forever
 
 
     launched = []
     launched_threads = []
+    recorded_output = []
 
     try:
         folder_model = './clf_images/saved_models/clf_enemy/12_Oct_2019__20_51_58'
         deployed_clf_folder = './deployed_clf' # tflite version of folder_model
 
         #enemy_clf = ClfEnemy(folder_model,feed_fun=feed_function) # use tensorflow version
-        enemy_clf = Tflite_clf(folder_model,deployed_clf_folder,build_model=False,feed_fun=feed_function)# use tflite version
+        enemy_clf = Tflite_clf(folder_model,deployed_clf_folder,build_model=False,feed_fun=feed_function,send_imgs=True)# use tflite version
 
         all_features = {
-            'bullets' : TemplateMatching('./templates/r2/bala.png',resize_factor=0.5,feed_fun=feed_function),
-            'hp' : TemplateMatching('./templates/r2/hearth.png',resize_factor=0.5,feed_fun=feed_function),
-            # 'scope' : TemplateMatching('./templates/r2/mira.png',resize_factor=0.5,feed_fun=feed_function),
-            'blanks' : TemplateMatching('./templates/r2/blank.png',resize_factor=0.5,feed_fun=feed_function),
+            'bullets' : TemplateMatching('./templates/r2/bala.png',resize_factor=0.5,feed_fun=feed_function,send_imgs=True),
+            'hp' : TemplateMatching('./templates/r2/hearth.png',resize_factor=0.5,feed_fun=feed_function,send_imgs=True),
+            # 'scope' : TemplateMatching('./templates/r2/mira.png',resize_factor=0.5,feed_fun=feed_function,send_imgs=True),
+            'blanks' : TemplateMatching('./templates/r2/blank.png',resize_factor=0.5,feed_fun=feed_function,send_imgs=True),
             'enemys' : enemy_clf
         }
-        all_colors = {'bullets' : (255, 0, 255), # RGB
-                       'hp' : (0, 0, 255),
-                       'scope' : (51, 204, 51),
-                       'blanks' : (51, 204, 204),
-                        'enemys' : (255, 0, 0)
-        }
+
         sleep_times = {
-            'bullets': 0.1,  # RGB
-            'hp': 1,
-            'scope': 1,
-            'blanks': 1,
+            'bullets': -1,  # RGB
+            'hp': -1,
+            'scope': -1,
+            'blanks': -1,
             'enemys': -1
         }
 
@@ -84,15 +89,21 @@ if __name__ == '__main__':
         all_timestamps ={}
         all_bbs = {}
 
-        # TODO filtrar segun historia
+
 
         def read_socket_and_update(key,s_addres,lock,barrier_next_msg):
             for msg in socket_read_msg(s_addres,verbose=False,skip_if_delay=skip_if_delay):
 
+                if 'END' in msg:
+                    with lock:
+                        all_timestamps['END'] = True
+                    break
+
                 with lock:
                     all_timestamps['t_{0}'.format(key)] = msg['t_proc']
                     all_bbs['bb_{0}'.format(key)] = msg['coords']
-                #print('New message ',msg)
+                    if record_output:
+                        recorded_output.append({key : msg})
 
                 if debug:
                     barrier_next_msg.wait()
@@ -116,35 +127,37 @@ if __name__ == '__main__':
 
         updates=0
         st=time.time()
+        should_cont = True
         try:
-            while True:
+            while should_cont:
                 with lock:
                     current_state = all_timestamps.copy()
                     current_bbs = all_bbs.copy()
                     updates +=1
-
+                    if 'END' in all_timestamps:
+                        should_cont = False
 
                 # read current img
                 timestamp, img_c = feed_function()
                 #print('Vis: {0}'.format(timestamp))
                 current_state['time_img'] = timestamp
 
-                # show img and show overlay
-                img_cloned = img_c.copy()
-
-                # draw all the timestamps
-                x_cord=400
-                for k,v in current_state.items():
-                    cv2.putText(img_cloned, 'c_{1:15s}: {0}'.format(v,k), (10, x_cord), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2)
-                    x_cord+=30
-
-                # draw all bbs
-                for ind,(k,bb_list) in enumerate(current_bbs.items()):
-                    for t in bb_list:
-                        x2 = cv2.rectangle(img_cloned, t[0], t[1], tuple(all_colors[k.split('_')[1]]), 2)
-
                 # Show result
                 if show:
+                    # show img and show overlay
+                    img_cloned = img_c.copy()
+
+                    # draw all the timestamps
+                    x_cord = 400
+                    for k, v in current_state.items():
+                        cv2.putText(img_cloned, 'c_{1:15s}: {0}'.format(v, k), (10, x_cord), cv2.FONT_HERSHEY_SIMPLEX,
+                                    0.5, (255, 255, 255), 2)
+                        x_cord += 30
+
+                    # draw all bbs
+                    for ind, (k, bb_list) in enumerate(current_bbs.items()):
+                        for t in bb_list:
+                            x2 = cv2.rectangle(img_cloned, t[0], t[1], tuple(all_colors[k.split('_')[1]]), 2)
                     cv2.imshow('t2',img_cloned)
                     k = cv2.waitKey(refresh_time)
 
@@ -162,6 +175,15 @@ if __name__ == '__main__':
 
     finally:
         en=time.time()
+        if record_output:
+            output_folder = 'saved_state_updates'
+            os.makedirs(output_folder,exist_ok=True)
+            output_path = os.path.join(output_folder,'states_{0}.pkl'.format(now_string()))
+
+            print('Saving state_updates in {0}'.format(output_path))
+            with open(output_path,'wb') as f:
+                pickle.dump(recorded_output,f)
+
         # espera cerrar procesos abiertos
         for th in launched_threads:
             th.join()

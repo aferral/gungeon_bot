@@ -7,30 +7,14 @@
 # TODO0 investigar tf.saved_model
 # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md
 
-# TODO mejorar pipeline de feed function. Requiero que sea un proceso algo estilo cliente servidor para las frames
-# Luego cada proceso llama un get_frame como feedfunction
-# Para generar el dummy que toca un video se utilizaria el mismo asunto pero que avanze con cierto timeout
-# Para el modo de prueba tiene que entregar en secuencia para cada conexion.
+# TODO trabajar en rectificacion de estado
+
 # TODO? agregar post proceso bbs?? (eliminar cuadrados muy pequenos o grandes)
+# Posible integracion de distancias??
 
-# idea feature detector de movimiento?? (optical flow)
-# Idea rectificacion de estado
 
-    # TODO Refactor de deploy para ingresar funcion de historico
-    # TODO evaluar delay aceptable
+# TODO idea feature detector de movimiento?? (optical flow)
 
-    (guarda la lista hasta X pasos de los valores recividos)
-
-    -- Trayectorias de bbs. Trata de trackear como las mismas entidades se han movido en el tiempo.
-    -- Trayectorias bbs de disparos
-
-    -- Ubica player en el tiempo
-
-    -- IDEA crear clasificador de bbs (se hace resize a adimension fija)
-
-    Estima entidades existentes y cuales son enemigos.
-
-    Genera estado actual limpio (posiciones enemigos, pos jugador, etc)
 
 # TODO calcular terreno inapasable
 
@@ -41,13 +25,19 @@
 
 # TODO orquestar pipeline + state_fusion
 
-# TODO crear replays imgs, states,
 # TODO crear en deplot algo que mate todos ls processo de captura a la vez
-# TODO colocar unixx socket a captura de imagenes???
 # todo la arquitectura de un frame buffer parece interesante (http://algomuse.com/c-c/developing-a-multithreaded-real-time-video-processing-application-in-opencv)
 
 # TODO mejorar algo sistema de balas?? no detecta bien cuando estan muy juntas o por color
 # TODO mejora de deteccion enemigos, usar blanco y negro o colores HSV.
+
+# TODO mejorar pipeline de feed function. Requiero que sea un proceso algo estilo cliente servidor para las frames
+# TODO colocar unixx socket a captura de imagenes???
+
+# Luego cada proceso llama un get_frame como feedfunction
+# Para generar el dummy que toca un video se utilizaria el mismo asunto pero que avanze con cierto timeout
+# Para el modo de prueba tiene que entregar en secuencia para cada conexion.
+
 
 Pipeline
 

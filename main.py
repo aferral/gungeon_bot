@@ -39,9 +39,10 @@ def one_show(a,wait=0):
 
 
 class feature_function:
-    def __init__(self,feed_fun=None):
+    def __init__(self,feed_fun=None,send_imgs=False):
         self.feed_fun = try_to_get_latest if feed_fun is None else feed_fun
         self.use_context=False
+        self.send_imgs=send_imgs
 
     def process(self,img_c = None):
         if img_c is None:
@@ -49,7 +50,12 @@ class feature_function:
         else:
             timestamp = -1
 
-        return self.base_process(img_c,timestamp)
+        out= self.base_process(img_c,timestamp)
+        if self.send_imgs and 'coords' in out:
+            #(ymin, xmin), (ymax, xmax)
+            out['imgs'] = [img_c[p0[1]:p1[1],p0[0]:p1[0]] for p0,p1 in out['coords']]
+        return out
+
 
     def base_process(self,img_c,timestamp):
         raise NotImplementedError()
