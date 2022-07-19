@@ -1,0 +1,24 @@
+
+
+Sol A: 
+Proceso c++ escribe a disco a cada rato (particion en ram). Escribe numero 1-100 (lo que limite archivos) con su timestamp
+Proceso python lee cuando puede tomando el nombre con mayor timestamp.
+
+Sol B:
+Proceso c++ se bloquea lee fifoA. Cuando recive mensaje por fifoA escribe en fifoB una captura de pantalla
+Proceso python escribe por fifoA cuando quiere una imagen luego espera en fifoB que llegue los datos
+
+Sol C:
+
+Crear una pipe entre proceso c++ y preproceso_python. Proceso c++ envia continuamente imagenes a preproceso (preproceso debe ser muy rapido para superar velocidad de llegada)
+, el cual solamente se queda con la ultima. Luego mediante comunicacion entre procesos python (servicio - servidor) se entrega la cola de imagenes 
+
+
+
+
+Ideas futuro mejora clasificador enemigos.
+        # Todo ** Colocar cabeza de predect bb.
+        # todo ** Colocar cabeza de dice coeff.
+        # todo Idea tirar degragado gausiano desde centro de cuadrado.
+        # TODO quitar espacios en blanco ??
+        # TODO cada X iteraciones si es neceario regenerar posibles batchs.

@@ -1,0 +1,81 @@
+
+# Notas de vitacora
+ ha sido vital balancear el 1 , 0 
+Al parecer binarizando mejora
+
+Aumentar la penalizacion de 1 a *4 dejo todo en blanco
+
+
+# Creo que puede ser la resolucion
+
+# Cambiar cabeza para otra perdiada
+
+
+
+-- Colocar cosas de keras para detener entrenamiento
+
+
+
+-- Quitar espacios en negro de datos
+
+-- El cambio de softmax resulto ser bastante bueno
+
+-- Generar reporte final con
+loss train, loss val, loss test. Max val loss
+imagen de prueba
+
+Generar una lista de modelos anternativos
+
+-- Expandir la vision (cambiara la loss)
+-- Ponderar la loss
+-- Aumentar capas
+-- Aumentar dimensiones
+
+
+
+-- Aplicar focal loss
+
+
+-- Detener al final de entrenamiento
+
+Revisar perdida por termino y activaciones para elementos en train, val , test
+
+
+-- Influencia de la barra de boss es mala
+
+
+
+Algo raro esta pasando 
+'./clf_images/data/images/1569689579_93958518.png'
+
+x.eval_with_img(cv2.imread('./clf_images/data/images/1569689579_93958518.png'))
+
+entrega resultados distintos a 
+
+lt,acts,ts,img_ex=x.sess.run([x.loss,x.pred,x.targets,x.input_layer],fs)
+plt.imshow(acts[0,:,:,0]);plt.show()
+
+
+# El asunto era que en el pred de visualizacion tenia mal formateado el proceso de imagenes.
+Las imagenes las pasaba a la red como uint8 lo cual producia malos resultados
+
+
+al cambiar eso muetra resultados bastante buenso al final del entrenameinto.
+
+
+
+# Queda generar flujo de evaluacion
+- Crear generador de parametros: cada uno con nombre especifico
+Anotar metricas:
+	- tiempo de ejecucion (importante para tiempo real)
+	- recall, precision global.
+	- fotos de eval_with_img en carptea de resultado
+
+En carpeta de modelo 
+
+Luego tomar los mejores y dejar final
+
+
+mse no sirve mucho
+learning rate de 0.01 parece mejor
+

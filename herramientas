@@ -1,0 +1,72 @@
+temp=tf.contrib.receptive_field.compute_receptive_field_from_graph_def
+temp(x.sess.graph,x.input_layer,x.pred,input_resolution=x.shape_input_img)
+
+# la imagen de entrada es shape
+# la imagen de salida es shape * 0.5
+
+# test sobre imagenes test
+def test_shape(x_img,y_data,class_i):
+
+    cmap = lambda x : (cv2.applyColorMap(((1-x)*255).astype(np.uint8),cv2.COLORMAP_JET))
+    y_resized = resize(y_data[:,:,class_i], x_img.shape[0:2])
+    out_a=cv2.addWeighted(x_img.astype(np.uint8), 0.5, cmap(y_resized),0.5,0)
+
+    img_resized = resize(x_img, y_data.shape[0:2]).astype(np.uint8)
+    out_b=cv2.addWeighted(img_resized, 0.5, cmap(y_data[:,:,class_i]),0.5,0)
+    plt.title('resized_y')
+    plt.imshow(out_a)
+    plt.figure();
+    plt.title('resized_img')
+    plt.imshow(out_b);
+    plt.show()
+
+
+
+# Al parecer se esta moviendo los valores al realizar ciertas transformaciones
+import numpy as np
+from skimage.transform import resize
+import matplotlib.pyplot as plt
+t1=np.zeros((100,100))
+t1[20:30,40:50] = 1
+
+t2=resize(t1,(50,50))
+
+t3 = resize(t2,(100,100))
+
+plt.imshow(t1+t3)
+plt.show()
+
+
+# sea imagen original 
+
+(data_x,data_y,files_train,rel_train)=x.train_data 
+'./clf_images/data/images/1569689540_83799004.png'
+
+# la imagen en data_x es 
+plt.imshow(data_x[11]/255);plt.show()
+
+# la target 1 en data_y es 
+plt.imshow(data_y[11,:,:,1]);plt.show()
+
+# realizando resize del target 1 y colocandolo al img
+res2 = resize(data_y[11,:,:,1],data_x[11].shape[0:2])
+plt.imshow(data_x[11]/255*np.expand_dims(res2,-1));plt.show()
+
+# dibujando el bb target
+from IPython import embed; embed()
+
+res2 = resize(data_y[11,:,:,1],data_x[11].shape[0:2])
+bbs=from_act_to_bb(res2, 0)
+img_cloned = np.copy(data_x[11])
+for bd in bbs:
+    temp=bd
+    xmin,xmax,ymin,ymax = [temp[x] for x in ['xmin','xmax','ymin','ymax']]
+    cv2.rectangle(img_cloned, (ymin, xmin), (ymax, xmax), (0, 255, 0), 2)
+plt.imshow(img_cloned/255);plt.show()
+
+# comparacion de imagen origina vs re escalada
+
+
+
+
+files_train[11]
